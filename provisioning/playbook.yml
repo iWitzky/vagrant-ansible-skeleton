@@ -1,0 +1,31 @@
+---
+- name: This is a hello-world example
+  # all hosts provisioned by vagrant
+  hosts: all
+  # do things with root
+  become: yes
+
+  vars:
+      # needed to manage docker with ansible on host
+      pip_install_packages:
+        - name: docker
+      # add these users to the docker group to be able running containers without root
+      docker_users:
+        - vagrant
+
+  roles:
+    # install python requirements to manage docker with ansible on the host
+    - geerlingguy.pip
+    # install the docker
+    - geerlingguy.docker
+
+  tasks:
+    - name: Create a file called '/tmp/testfile.txt' with the content 'hello world from the machine '{{ ansible_facts['hostname'] }}''.
+      copy:
+        content: "hello world from the machine '{{ ansible_facts['hostname'] }}'\n"
+        dest: /tmp/testfile.txt
+
+    - name: Run hello-world docker container
+      docker_container:
+        name: hello-world
+        image: hello-world
